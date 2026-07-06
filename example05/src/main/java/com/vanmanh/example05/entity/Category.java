@@ -28,6 +28,9 @@ public class Category {
     @NotBlank
     @Size(min = 5, message = "Category name must contain atleast 5 characters")
     private String categoryName;
+
+    private String image;
+
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
     private List<Product> products;
 }

@@ -38,6 +38,12 @@ public class CategoryServiceImpl implements CategoryService {
     @Autowired
     private ModelMapper modelMapper;
 
+    @Autowired
+    private com.vanmanh.example05.service.FileService fileService;
+
+    @org.springframework.beans.factory.annotation.Value("${project.image}")
+    private String path;
+
     @Override
     public CategoryDTO createCategory(Category category) {
         Category savedCategory = categoryRepo.findByCategoryName(category.getCategoryName());
@@ -46,6 +52,9 @@ public class CategoryServiceImpl implements CategoryService {
             throw new APIException("Category with the name ' " + category.getCategoryName() + "'already exist!");
         }
 
+        if (category.getImage() == null || category.getImage().isEmpty()) {
+            category.setImage("default.png");
+        }
         savedCategory = categoryRepo.save(category);
         return modelMapper.map(savedCategory, CategoryDTO.class);
     }
@@ -122,5 +131,20 @@ public class CategoryServiceImpl implements CategoryService {
         } else {
             throw new ResourceNotFoundException("Category", "categoryId", categoryId);
         }
+    }
+
+    @Override
+    public CategoryDTO updateCategoryImage(Long categoryId, org.springframework.web.multipart.MultipartFile image) throws java.io.IOException {
+        Category category = categoryRepo.findById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "categoryId", categoryId));
+        String fileName = fileService.uploadImage(path, image);
+        category.setImage(fileName);
+        Category updatedCategory = categoryRepo.save(category);
+        return modelMapper.map(updatedCategory, CategoryDTO.class);
+    }
+
+    @Override
+    public java.io.InputStream getCategoryImage(String imageName) throws java.io.FileNotFoundException {
+        return fileService.getResource(path, imageName);
     }
 }

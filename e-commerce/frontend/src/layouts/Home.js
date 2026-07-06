@@ -48,6 +48,7 @@ function Home(props) {
             key={category.categoryId}
             categoryId={category.categoryId}
             categoryName={category.categoryName}
+            image={category.image}
           />
         ))}
         <Region/>

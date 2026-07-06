@@ -10,8 +10,8 @@ app.use(express.json());
 const PORT = process.env.PORT || 3000;
 
 const vnpay = new VNPay({
-  tmnCode: '99Y0JEG6',
-  secureSecret:'7UXFBPX9S8W8XDZZQKT7TOVLV9GE5QPQ',
+  tmnCode: process.env.VNP_TMN_CODE || '99Y0JEG6',
+  secureSecret: process.env.VNP_HASH_SECRET || '7UXFBPX9S8W8XDZZQKT7TOVLV9GE5QPQ',
   vnpUrl: "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html",
 
   testMode: true,

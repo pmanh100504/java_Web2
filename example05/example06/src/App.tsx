@@ -15,6 +15,11 @@ import { OrderList, OrderShow, OrderEdit } from "./component/Orders";
 import { UserList, UserEdit } from "./component/users";
 import LocalAtmIcon from "@mui/icons-material/LocalAtm";
 import UserIcon from "@mui/icons-material/Person";
+import { BannerList, BannerEdit, BannerCreate } from "./component/Banners";
+import BannerImageUpdate from "./component/BannerImageUpdate";
+import CategoryImageUpdate from "./component/CategoryImageUpdate";
+import ViewCarouselIcon from "@mui/icons-material/ViewCarousel";
+
 export const App = () => (
     <Admin authProvider={authProvider} layout={Layout} dataProvider={dataProvider} dashboard={Dashboard}>
 
@@ -39,10 +44,19 @@ export const App = () => (
             show={CartShow}
             icon={ShoppingCartIcon}
         />
-    <Resource name="orders" list={OrderList} show={OrderShow} edit={OrderEdit} icon={LocalAtmIcon}/>
-    <Resource name="users" list={UserList} edit={UserEdit} icon={UserIcon}/>
+        <Resource name="orders" list={OrderList} show={OrderShow} edit={OrderEdit} icon={LocalAtmIcon}/>
+        <Resource name="users" list={UserList} edit={UserEdit} icon={UserIcon}/>
+        <Resource
+            name="banners"
+            list={BannerList}
+            create={BannerCreate}
+            edit={BannerEdit}
+            icon={ViewCarouselIcon}
+        />
         <CustomRoutes>
             <Route path="/products/:id/update-image" element={<ProductImageUpdate />} />
+            <Route path="/banners/:id/update-image" element={<BannerImageUpdate />} />
+            <Route path="/categories/:id/update-image" element={<CategoryImageUpdate />} />
         </CustomRoutes>
     </Admin>
 );

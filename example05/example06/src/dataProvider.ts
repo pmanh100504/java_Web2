@@ -83,6 +83,7 @@ export const dataProvider: DataProvider = {
             carts: 'cartId',
             users: 'userId',
             orders: 'orderId',
+            banners: 'bannerId',
             // Add more mappings as needed
         };
 
@@ -112,7 +113,7 @@ export const dataProvider: DataProvider = {
             // Use public endpoints for read-only resources so non-admin users won't get 401
             if (resource === "carts") {
                 url = `${apiUrl}/admin/${resource}?${new URLSearchParams(query).toString()}`;
-            } else if (resource === "products" || resource === "categories") {
+            } else if (resource === "products" || resource === "categories" || resource === "banners") {
                 url = `${apiUrl}/public/${resource}?${new URLSearchParams(query).toString()}`;
             } else {
                 url = `${apiUrl}/admin/${resource}?${new URLSearchParams(query).toString()}`;
@@ -164,12 +165,19 @@ export const dataProvider: DataProvider = {
                     }));
                 }
 
+                let imageBaseUrl = 'http://localhost:8080/api/public/products/image/';
+                if (resource === 'banners') {
+                    imageBaseUrl = 'http://localhost:8080/api/public/banners/image/';
+                } else if (resource === 'categories') {
+                    imageBaseUrl = 'http://localhost:8080/api/public/categories/image/';
+                }
+
                 return {
                     id: item[idField],
                     ...item,
                     category,
                     products,
-                    image: item.image ? `${baseUrl}${item.image}` : null
+                    image: item.image ? `${imageBaseUrl}${item.image}` : null
                 };
             });
             console.log('data list: ', data);
@@ -304,6 +312,7 @@ export const dataProvider: DataProvider = {
             carts: 'cartId',
             users: 'userId',
             orders: 'orderId',
+            banners: 'bannerId',
             // Add more mappings as needed
         };
         const idField = idFieldMapping[resource] || 'id';
@@ -346,9 +355,16 @@ export const dataProvider: DataProvider = {
             };
         }
         else {
+            let imageBaseUrl = 'http://localhost:8080/api/public/products/image/';
+            if (resource === 'banners') {
+                imageBaseUrl = 'http://localhost:8080/api/public/banners/image/';
+            } else if (resource === 'categories') {
+                imageBaseUrl = 'http://localhost:8080/api/public/categories/image/';
+            }
             data = {
                 id: result.json[idField],
-                ...result.json
+                ...result.json,
+                image: result.json.image ? `${imageBaseUrl}${result.json.image}` : null
             };
         }
         return { data };
@@ -361,6 +377,7 @@ export const dataProvider: DataProvider = {
             carts: 'cartId',
             users: 'userId',
             orders: 'orderId',
+            banners: 'bannerId',
             // Add more mappings as needed
         };
         console.log('Request resource:', resource);

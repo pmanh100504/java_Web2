@@ -64,4 +64,18 @@ public class CategoryController {
           String status = categoryService.deleteCategory(categoryId);
           return new ResponseEntity<String>(status, HttpStatus.OK);
      }
+
+     @PutMapping("/admin/categories/{categoryId}/image")
+     public ResponseEntity<CategoryDTO> updateCategoryImage(@PathVariable Long categoryId,
+               @RequestParam("image") org.springframework.web.multipart.MultipartFile image) throws java.io.IOException {
+          CategoryDTO categoryDTO = categoryService.updateCategoryImage(categoryId, image);
+          return new ResponseEntity<CategoryDTO>(categoryDTO, HttpStatus.OK);
+     }
+
+     @GetMapping(value = "/public/categories/image/{imageName}", produces = org.springframework.http.MediaType.IMAGE_JPEG_VALUE)
+     public void getCategoryImage(@PathVariable String imageName, jakarta.servlet.http.HttpServletResponse response) throws java.io.IOException {
+          java.io.InputStream resource = categoryService.getCategoryImage(imageName);
+          response.setContentType(org.springframework.http.MediaType.IMAGE_JPEG_VALUE);
+          org.springframework.util.StreamUtils.copy(resource, response.getOutputStream());
+     }
 }

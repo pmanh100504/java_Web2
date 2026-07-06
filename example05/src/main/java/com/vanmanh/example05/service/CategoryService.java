@@ -11,4 +11,6 @@ public interface CategoryService {
     CategoryDTO updateCategory(Category category, Long categoryId);
     String deleteCategory(Long categoryId);
     CategoryDTO getCategoryById(Long categoryId);
+    CategoryDTO updateCategoryImage(Long categoryId, org.springframework.web.multipart.MultipartFile image) throws java.io.IOException;
+    java.io.InputStream getCategoryImage(String imageName) throws java.io.FileNotFoundException;
 }

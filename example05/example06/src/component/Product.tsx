@@ -3,13 +3,18 @@ import {Link as RouterLink} from "react-router-dom";
 const CustomImageField = ({ source }:{source:string}) => {
     const record = useRecordContext();
 
-    if (!record || !record[source]) {
-        return <span>No Image</span>;
-    }
+    if (!record) return null;
+
+    const imgVal = record[source];
+    const hasImage = imgVal && !imgVal.includes('default.png');
 
     return (
-        <RouterLink to={`/products/${record.id}/update-image`}>
-            <img src={record[source]} alt="Product" style={{ width: '100px', height: 'auto' }} />
+        <RouterLink to={`/products/${record.id}/update-image`} style={{ textDecoration: 'none' }}>
+            {hasImage ? (
+                <img src={imgVal} alt="Product" style={{ width: '100px', height: 'auto' }} />
+            ) : (
+                <span style={{ color: '#2563eb', fontWeight: '800', textDecoration: 'underline', cursor: 'pointer' }}>Tải ảnh lên</span>
+            )}
         </RouterLink>
     );
 };
