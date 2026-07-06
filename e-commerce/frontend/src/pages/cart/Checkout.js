@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { POST_ADD } from '../../api/apiService';
+import { POST_ADD, fetchUserProfile } from '../../api/apiService';
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -39,9 +39,10 @@ const Checkout = () => {
         if (vnpCode === "00") {
           try {
             const token = localStorage.getItem('authToken');
-            const cartId = localStorage.getItem('cartId');
+            let cartId = localStorage.getItem('cartId');
+            if (cartId === 'null' || cartId === 'undefined') cartId = null;
             const user = JSON.parse(localStorage.getItem('user') || '{}');
-            const email = user.email;
+            const email = user.email || user.username || user.sub || user.user;
 
             if (token && cartId && email) {
               console.log('🚀 VNPay payment successful, placing order on Spring Boot backend...');
@@ -135,15 +136,33 @@ const Checkout = () => {
         }
       } else {
         const token = localStorage.getItem('authToken');
-        const cartId = localStorage.getItem('cartId');
+        let cartId = localStorage.getItem('cartId');
+        if (cartId === 'null' || cartId === 'undefined') cartId = null;
         const user = JSON.parse(localStorage.getItem('user') || '{}');
-        const email = user.email || form.email;
+        const email = user.email || user.username || user.sub || user.user || form.email;
 
         if (token && cartId && email) {
           console.log('🚀 Saving COD order to backend...');
-          // POST /public/users/{emailId}/carts/{cartId}/payments/{paymentMethod}/order
-          await POST_ADD(`public/users/${encodeURIComponent(email)}/carts/${cartId}/payments/COD/order`);
-          console.log('✅ Order placed successfully on backend');
+          try {
+            await POST_ADD(`public/users/${encodeURIComponent(email)}/carts/${cartId}/payments/COD/order`);
+            console.log('✅ Order placed successfully on backend');
+          } catch (postErr) {
+            if (postErr?.response?.status === 404) {
+              console.warn('⚠️ Stale cartId detected. Attempting to fetch correct cartId and retry...');
+              const profile = await fetchUserProfile(email);
+              if (profile && profile.cart) {
+                const newCartId = profile.cart.cartId;
+                localStorage.setItem("cartId", newCartId);
+                console.log(`✅ Stale cartId ${cartId} updated to ${newCartId}. Retrying order...`);
+                await POST_ADD(`public/users/${encodeURIComponent(email)}/carts/${newCartId}/payments/COD/order`);
+                console.log('✅ Order placed successfully after retry');
+              } else {
+                throw postErr;
+              }
+            } else {
+              throw postErr;
+            }
+          }
         } else {
           // COD payment - Save to localStorage directly (no API call)
           console.log('🚀 Saving COD order to localStorage...');

@@ -35,7 +35,8 @@ const Detail = () => {
       alert('Đã thêm vào giỏ hàng');
     } catch (err) {
       console.error('Add to cart failed', err);
-      alert('Không thể thêm vào giỏ hàng');
+      const msg = err?.response?.data?.message || err?.message || 'Vui lòng thử lại sau.';
+      alert('Không thể thêm vào giỏ hàng: ' + msg);
     }
   };
 

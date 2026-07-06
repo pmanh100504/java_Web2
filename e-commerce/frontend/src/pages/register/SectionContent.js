@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { REGISTER } from "../../api/apiService";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 const Register = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -124,7 +124,7 @@ const Register = () => {
         </article>
       </div>
       <p className="text-center mt-4">
-        Have an account? <a href="#">Log In</a>
+        Have an account? <Link to="/Login">Log In</Link>
       </p>
       <br />
       <br />

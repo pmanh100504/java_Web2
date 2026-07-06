@@ -4,12 +4,15 @@ import Home from "./Home";
 
 import UserLogin from "./UserLogin";
 import UserRegister from "./UserRegister";
- import ListingGrid from "./ListingGrid";
+import ListingGrid from "./ListingGrid";
 import DetailProduct from "./DetailProduct";
 import SearchResults from "../pages/product/SearchResults";
 import Cart from "../pages/cart/Cart";
 import Checkout from "../pages/cart/Checkout";
 import Profile from "../pages/user/Profile";
+import AboutUs from "../pages/info/AboutUs";
+import Information from "../pages/info/Information";
+import WarrantyPolicy from "../pages/info/WarrantyPolicy";
 
 
 const Main = () => (
@@ -26,6 +29,9 @@ const Main = () => (
       <Route path="/ListingGrid" element={<ListingGrid />} />
       <Route path="/search" element={<SearchResults />} />
       <Route path="/SearchResults" element={<SearchResults />} />
+      <Route path="/AboutUs" element={<AboutUs />} />
+      <Route path="/Information" element={<Information />} />
+      <Route path="/WarrantyPolicy" element={<WarrantyPolicy />} />
     </Routes>
   </main>
 );

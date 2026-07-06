@@ -117,7 +117,7 @@ const Section1 = ({ categoryName, categoryId }) => {
       {products.length > 0 &&
         products.map((row) => {
           return (
-            <div className="col-xl-3 col-lg-4 col-md-6 col-12 mb-4" key={row.id}>
+            <div className="col-xl-3 col-lg-4 col-md-6 col-12 mb-4" key={row.productId || row.id}>
               <div className="card card-product-grid h-100">
                 <Link
                   to={`/Detail?productId=${row.productId}`}
@@ -138,7 +138,7 @@ const Section1 = ({ categoryName, categoryId }) => {
                       <img src={startsDisable} alt="disabled stars" />
                     </li>
                   </ul>
-                  <Link to={`/Detail?productId=${row.id}`} className="title d-block text-truncate">
+                  <Link to={`/Detail?productId=${row.productId}`} className="title d-block text-truncate">
                     {row.productName}
                   </Link>
                   <div className="d-flex align-items-center">

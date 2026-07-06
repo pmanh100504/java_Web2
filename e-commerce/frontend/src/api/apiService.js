@@ -117,8 +117,9 @@ export function LOGIN(body) {
           
           localStorage.setItem("user", JSON.stringify(userInfo));
 
-          if (userInfo.email) {
-            return fetchUserProfile(userInfo.email)
+          const userEmail = userInfo.email || userInfo.username || userInfo.sub || userInfo.user;
+          if (userEmail) {
+            return fetchUserProfile(userEmail)
               .then(profile => {
                 if (profile && profile.cart) {
                   localStorage.setItem("cartId", profile.cart.cartId);
@@ -270,11 +271,14 @@ export function REGISTER(data, navigate) {
 
 export async function getOrFetchCartId() {
   let cartId = localStorage.getItem('cartId');
+  if (cartId === 'null' || cartId === 'undefined') {
+    cartId = null;
+  }
   const token = localStorage.getItem('authToken');
   if (!cartId && token) {
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      const email = user.email;
+      const email = user.email || user.username || user.sub || user.user;
       if (email) {
         const profile = await fetchUserProfile(email);
         if (profile && profile.cart) {
@@ -296,7 +300,7 @@ export async function addToCart(product, quantity) {
   const existing = cart.find(item => item.productId === productId || item.id === productId);
 
   const token = localStorage.getItem('authToken');
-  const cartId = await getOrFetchCartId();
+  let cartId = await getOrFetchCartId();
 
   if (token && cartId) {
     try {
@@ -319,6 +323,31 @@ export async function addToCart(product, quantity) {
       window.dispatchEvent(new CustomEvent('cartUpdated'));
       return { success: true };
     } catch (err) {
+      if (err?.response?.status === 404) {
+        console.warn('⚠️ Stale cartId detected in addToCart. Re-fetching correct cartId and retrying...');
+        localStorage.removeItem('cartId');
+        const newCartId = await getOrFetchCartId();
+        if (newCartId) {
+          if (existing) {
+            const newQuantity = (existing.quantity || 1) + quantity;
+            await updateCartProductBackend(newCartId, productId, newQuantity);
+            existing.quantity = newQuantity;
+          } else {
+            await addProductToCartBackend(newCartId, productId, quantity);
+            cart.push({
+              productId,
+              productName: product.productName,
+              image: product.image,
+              price: product.price,
+              specialPrice: product.specialPrice,
+              quantity,
+            });
+          }
+          localStorage.setItem('cart', JSON.stringify(cart));
+          window.dispatchEvent(new CustomEvent('cartUpdated'));
+          return { success: true };
+        }
+      }
       console.error('Failed to sync add to cart with backend:', err);
       throw err;
     }
@@ -344,10 +373,23 @@ export async function addToCart(product, quantity) {
 
 export async function updateCartItemQuantity(productId, newQuantity) {
   const token = localStorage.getItem('authToken');
-  const cartId = await getOrFetchCartId();
+  let cartId = await getOrFetchCartId();
 
   if (token && cartId) {
-    await updateCartProductBackend(cartId, productId, newQuantity);
+    try {
+      await updateCartProductBackend(cartId, productId, newQuantity);
+    } catch (err) {
+      if (err?.response?.status === 404) {
+        console.warn('⚠️ Stale cartId detected in updateCartItemQuantity. Re-fetching and retrying...');
+        localStorage.removeItem('cartId');
+        const newCartId = await getOrFetchCartId();
+        if (newCartId) {
+          await updateCartProductBackend(newCartId, productId, newQuantity);
+        }
+      } else {
+        console.error('Failed to sync update quantity with backend:', err);
+      }
+    }
   }
 
   const raw = localStorage.getItem('cart') || '[]';
@@ -364,10 +406,23 @@ export async function updateCartItemQuantity(productId, newQuantity) {
 
 export async function removeFromCart(productId) {
   const token = localStorage.getItem('authToken');
-  const cartId = await getOrFetchCartId();
+  let cartId = await getOrFetchCartId();
 
   if (token && cartId) {
-    await deleteProductFromCartBackend(cartId, productId);
+    try {
+      await deleteProductFromCartBackend(cartId, productId);
+    } catch (err) {
+      if (err?.response?.status === 404) {
+        console.warn('⚠️ Stale cartId detected in removeFromCart. Re-fetching and retrying...');
+        localStorage.removeItem('cartId');
+        const newCartId = await getOrFetchCartId();
+        if (newCartId) {
+          await deleteProductFromCartBackend(newCartId, productId);
+        }
+      } else {
+        console.error('Failed to sync remove from cart with backend:', err);
+      }
+    }
   }
 
   const raw = localStorage.getItem('cart') || '[]';
@@ -375,4 +430,8 @@ export async function removeFromCart(productId) {
   localStorage.setItem('cart', JSON.stringify(arr));
   window.dispatchEvent(new CustomEvent('cartUpdated'));
   return arr;
+}
+
+export function updateUserBackend(userId, userDTO) {
+  return callApi(`public/users/${userId}`, "PUT", userDTO, null, { usePublic: false });
 }

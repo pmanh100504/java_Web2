@@ -41,20 +41,20 @@ h1, h2, h3, h4, h5, h6, .title {
 
 /* Premium Buttons */
 .btn-primary {
-  background: linear-gradient(135deg, #ff6a00 0%, #ff8c3a 100%) !important;
+  background: linear-gradient(135deg, #2563eb 0%, #60a5fa 100%) !important;
   border: none !important;
   border-radius: 30px !important;
   padding: 10px 24px !important;
   font-weight: 600 !important;
   color: #ffffff !important;
-  box-shadow: 0 4px 15px rgba(255, 106, 0, 0.2) !important;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2) !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 .btn-primary:hover {
   transform: translateY(-2px) !important;
-  box-shadow: 0 8px 25px rgba(255, 106, 0, 0.35) !important;
-  background: linear-gradient(135deg, #ff7b1a 0%, #ffa054 100%) !important;
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.35) !important;
+  background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%) !important;
   color: #ffffff !important;
 }
 
@@ -83,7 +83,7 @@ h1, h2, h3, h4, h5, h6, .title {
 }
 
 .navbar-light .nav-link:hover {
-  color: #ff6a00 !important;
+  color: #2563eb !important;
 }
 
 /* Header Main Search Component */
@@ -107,9 +107,9 @@ h1, h2, h3, h4, h5, h6, .title {
 }
 
 .search-header .input-group:focus-within {
-  border-color: #ff6a00 !important;
+  border-color: #2563eb !important;
   background: #ffffff !important;
-  box-shadow: 0 0 0 4px rgba(255, 106, 0, 0.1) !important;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1) !important;
 }
 
 .search-header .form-control {
@@ -153,20 +153,20 @@ h1, h2, h3, h4, h5, h6, .title {
 }
 
 .navbar-main .nav-link:hover {
-  color: #ff6a00 !important;
+  color: #2563eb !important;
 }
 
 /* Header Cart Badge styling */
 .badge-danger {
-  background-color: #ff6a00 !important;
-  box-shadow: 0 2px 8px rgba(255, 106, 0, 0.4) !important;
+  background-color: #2563eb !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4) !important;
 }
 
 /* Product Section Styling */
 .section-heading {
   margin-top: 40px !important;
   margin-bottom: 24px !important;
-  border-left: 4px solid #ff6a00 !important;
+  border-left: 4px solid #2563eb !important;
   padding-left: 16px !important;
 }
 
@@ -208,8 +208,8 @@ h1, h2, h3, h4, h5, h6, .title {
 
 .timer > div {
   background: #ffffff !important;
-  border: 1px solid rgba(255, 106, 0, 0.15) !important;
-  box-shadow: 0 4px 10px rgba(255, 106, 0, 0.05) !important;
+  border: 1px solid rgba(37, 99, 235, 0.15) !important;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.05) !important;
   border-radius: 12px !important;
   padding: 10px !important;
   min-width: 60px !important;
@@ -219,7 +219,7 @@ h1, h2, h3, h4, h5, h6, .title {
 .timer .num {
   font-size: 20px !important;
   font-weight: 800 !important;
-  color: #ff6a00 !important;
+  color: #2563eb !important;
   display: block !important;
 }
 
@@ -268,7 +268,7 @@ h1, h2, h3, h4, h5, h6, .title {
 }
 
 .card-sm:hover .title {
-  color: #ff6a00 !important;
+  color: #2563eb !important;
 }
 
 /* Footer Styling */
@@ -300,7 +300,7 @@ h1, h2, h3, h4, h5, h6, .title {
 }
 
 .section-footer a:hover {
-  color: #ff6a00 !important;
+  color: #2563eb !important;
   transform: translateX(4px) !important;
   text-decoration: none !important;
 }
@@ -326,8 +326,8 @@ h1, h2, h3, h4, h5, h6, .title {
 }
 
 .menu-category li a:hover {
-  background-color: #fff0e5 !important;
-  color: #ff6a00 !important;
+  background-color: #eff6ff !important;
+  color: #2563eb !important;
   padding-left: 24px !important;
   text-decoration: none !important;
 }
@@ -377,6 +377,6 @@ h1, h2, h3, h4, h5, h6, .title {
 }
 
 .card-banner .btn-secondary:hover {
-  background: #ff6a00 !important;
+  background: #2563eb !important;
   color: #ffffff !important;
 }

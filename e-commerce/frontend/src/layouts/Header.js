@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { GET_ALL, fetchUserProfile } from "../api/apiService";
 import { Link, useNavigate } from "react-router-dom";
-import us from "../assets/images/icons/flags/US.png";
-import logo from "../assets/images/logo.svg";
 
 function Header() {
     const [categories, setCategories] = useState([]);
@@ -11,22 +9,27 @@ function Header() {
     const [userEmail, setUserEmail] = useState(null);
     const [userInfo, setUserInfo] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
-    const [showUserMenu, setShowUserMenu] = useState(false);
+    const [showDropdown, setShowDropdown] = useState(false);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const close = () => setShowDropdown(false);
+        window.addEventListener('click', close);
+        return () => window.removeEventListener('click', close);
+    }, []);
 
     useEffect(() => {
         const params = {
             pageNumber: 0,
-            pageSize: 5,
+            pageSize: 15,
             sortBy: 'categoryId',
             sortOrder: 'asc',
         };
 
         GET_ALL('categories', params, { usePublic: true })
             .then(response => {
-                // Cập nhật state với dữ liệu nhận được (giả định cấu trúc response.content)
-                setCategories(response.content);
-                console.log("response", response.content);
+                const list = response?.content || (Array.isArray(response) ? response : []);
+                setCategories(list);
             })
             .catch(error => {
                 console.error('Failed to fetch categories:', error);
@@ -38,12 +41,10 @@ function Header() {
             try {
                 const token = localStorage.getItem('authToken');
                 setIsLogged(!!token);
-                // optional: if user info stored in localStorage
                 const user = JSON.parse(localStorage.getItem('user') || 'null');
                 let email = user?.email || null;
                 setUserInfo(user);
                 
-                // if no stored user info, try to decode JWT to get an email/username
                 if (!email && token) {
                     try {
                         const parts = token.split('.');
@@ -55,13 +56,14 @@ function Header() {
                             email = decoded.email || decoded.sub || decoded.username || decoded.user || decoded.preferred_username || null;
                         }
                     } catch (e) {
-                        // ignore decode errors
+                        // ignore
                     }
                 }
                 setUserEmail(email);
 
-                // Fetch and sync cartId and products if logged in and cartId is missing
-                if (email && !localStorage.getItem("cartId") && token) {
+                const storedCartId = localStorage.getItem("cartId");
+                const hasValidCartId = storedCartId && storedCartId !== "null" && storedCartId !== "undefined";
+                if (email && !hasValidCartId && token) {
                     fetchUserProfile(email)
                         .then(profile => {
                             if (profile && profile.cart) {
@@ -98,7 +100,6 @@ function Header() {
         window.dispatchEvent(new CustomEvent('cartUpdated'));
         window.dispatchEvent(new CustomEvent('authChanged'));
         setIsLogged(false);
-        // reload to update UI or navigate to home
         window.location.href = '/';
     };
 
@@ -134,159 +135,157 @@ function Header() {
     };
 
     return (
-        <header className="section-header">
-            {/* Topbar: Ngôn ngữ và Links phụ */}
-            <nav className="navbar d-none d-md-flex p-md-0 navbar-expand-sm navbar-light border-bottom">
-                <div className="container">
-                    <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTop4" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                        <span className="navbar-toggler-icon"></span>
-                    </button>
-                    <div className="collapse navbar-collapse" id="navbarTop4">
-                        <ul className="navbar-nav mr-auto">
-                            <li>
-                                <span className="nav-link">
-                                    {isLogged ? (
-                                        <>
-                                            Xin chào,
-                                            {' '}
-                                            {userEmail ? <Link to="/Profile">{userEmail}</Link> : <Link to="/Profile">Tài khoản</Link>}
-                                            {' '}|{' '}
-                                            <a href="#" onClick={handleLogout}>Đăng xuất</a>
-                                        </>
-                                    ) : (
-                                        <>Xin chào, <Link to="/Login">Đăng nhập</Link> hoặc <Link to="/Register">Đăng ký</Link></>
-                                    )}
-                                </span>
-                            </li>
-                            <li><a href="#" className="nav-link">Khuyến mãi</a></li>
-                            <li><a href="#" className="nav-link">Bán hàng</a></li>
-                            <li><a href="#" className="nav-link">Trợ giúp</a></li>
-                        </ul>
-                        <ul className="navbar-nav">
-                            <li>
-                                <a href="#" className="nav-link">
-                                    <img src={us} alt="us" height="16" /> Giao hàng tới
-                                </a>
-                            </li>
-                            {isLogged && userEmail && (
-                                <li className="nav-item dropdown">
-                                    <a 
-                                        href="#" 
-                                        className="nav-link dropdown-toggle" 
-                                        data-toggle="dropdown"
-                                        onClick={() => setShowUserMenu(!showUserMenu)}
-                                    >
-                                        <i className="fa fa-user"></i> {userEmail.split('@')[0]}
-                                    </a>
-                                    <ul className="dropdown-menu dropdown-menu-right">
-                                        <li className="dropdown-header">
-                                            <strong>{userEmail}</strong>
-                                        </li>
-                                        <li><hr className="dropdown-divider" /></li>
-                                        <li><Link className="dropdown-item" to="/Profile"><i className="fa fa-user-circle"></i> Hồ sơ của tôi</Link></li>
-                                        <li><Link className="dropdown-item" to="/cart"><i className="fa fa-shopping-cart"></i> Đơn hàng của tôi</Link></li>
-                                        <li><Link className="dropdown-item" to="#"><i className="fa fa-heart"></i> Yêu thích</Link></li>
-                                        <li><Link className="dropdown-item" to="#"><i className="fa fa-cog"></i> Cài đặt</Link></li>
-                                        <li><hr className="dropdown-divider" /></li>
-                                        <li><a className="dropdown-item" href="#" onClick={handleLogout}><i className="fa fa-sign-out"></i> Đăng xuất</a></li>
-                                    </ul>
-                                </li>
-                            )}
-                            <li className="nav-item dropdown">
-                                <a href="#" className="nav-link dropdown-toggle" data-toggle="dropdown">Danh sách theo dõi</a>
-                                <ul className="dropdown-menu small">
-                                    <li><a className="dropdown-item" href="#">Sản phẩm thứ nhất</a></li>
-                                    <li><a className="dropdown-item" href="#">Sản phẩm thứ hai</a></li>
-                                    <li><a className="dropdown-item" href="#">Sản phẩm thứ ba</a></li>
-                                </ul>
-                            </li>
-                            <li><a href="#" className="nav-link">Cửa hàng của tôi</a></li>
-                            <li><a href="#" className="nav-link"><i className="fa fa-bell"></i></a>
-                            </li>
-                            <li>
-                                <a href="/cart" className="nav-link">
-                                    <i className="fa fa-shopping-cart"></i>
-                                    {cartCount > 0 && (
-                                        <span className="badge badge-pill badge-danger ml-1">{cartCount}</span>
-                                    )}
-                                </a>
-                            </li>
-                        </ul>
+        <header className="section-header" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <div style={{ background: '#1d60b3', padding: '6px 0', fontSize: '12px', color: '#ffffff' }}>
+                <div className="container d-flex justify-content-between align-items-center flex-wrap">
+                    <div style={{ display: 'flex', gap: '15px' }}>
+                        <Link to="/WarrantyPolicy" style={{ color: '#ffffff', textDecoration: 'none', opacity: 0.9 }}>Chính sách bảo hành</Link>
+                        <span style={{ opacity: 0.4 }}>|</span>
+                        <a href="/ListingGrid" style={{ color: '#ffffff', textDecoration: 'none', opacity: 0.9 }}>Trả góp</a>
+                        <span style={{ opacity: 0.4 }}>|</span>
+                        <a href="/ListingGrid" style={{ color: '#ffffff', textDecoration: 'none', opacity: 0.9 }}>Thu cũ đổi mới</a>
+                    </div>
+                    <div style={{ display: 'flex', gap: '15px' }}>
+                        <Link to="/AboutUs" style={{ color: '#ffffff', textDecoration: 'none', opacity: 0.9 }}>Về chúng tôi</Link>
+                        <span style={{ opacity: 0.4 }}>|</span>
+                        <Link to="/Information" style={{ color: '#ffffff', textDecoration: 'none', opacity: 0.9 }}>Thông tin</Link>
+                        <span style={{ opacity: 0.4 }}>|</span>
+                        {isLogged ? (
+                            <span>
+                                Xin chào, <Link to="/Profile" style={{ color: '#ffffff', textDecoration: 'underline' }}><strong>{userEmail}</strong></Link> | <a href="#" onClick={handleLogout} style={{ color: '#facc15', fontWeight: 'bold' }}>Đăng xuất</a>
+                            </span>
+                        ) : (
+                            <div style={{ display: 'inline-flex', gap: '8px' }}>
+                                <Link to="/Login" style={{ color: '#ffffff', textDecoration: 'none', fontWeight: 'bold' }}>Đăng nhập</Link>
+                                <span style={{ opacity: 0.5 }}>/</span>
+                                <Link to="/Register" style={{ color: '#ffffff', textDecoration: 'none', fontWeight: 'bold' }}>Đăng ký</Link>
+                            </div>
+                        )}
                     </div>
                 </div>
-            </nav>
+            </div>
 
-            {/* Main Header: Logo và Ô tìm kiếm */}
-            <section className="header-main border-bottom">
+            <div style={{ background: '#2b80dd', padding: '15px 0', color: '#ffffff' }}>
                 <div className="container">
-                    <div className="row row-sm align-items-center">
-                        <div className="col-6 col-sm col-md col-lg flex-grow-0">
-                            <Link to="/Home" className="brand-wrap">
-                                <img className="logo" src={logo} alt="Logo" />
+                    <div className="row align-items-center">
+                        <div className="col-12 col-md-3 col-lg-3 mb-2 mb-md-0">
+                            <Link to="/Home" style={{ textDecoration: 'none' }}>
+                                <span style={{ fontSize: '28px', fontWeight: '800', color: '#ffffff', display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
+                                    <span>dientu.vn</span>
+                                    <span style={{ height: '3px', background: 'linear-gradient(90deg, #ffffff 0%, rgba(255,255,255,0) 100%)', width: '100px', display: 'block', marginTop: '2px', borderRadius: '2px' }}></span>
+                                </span>
                             </Link>
                         </div>
-                        <div className="col-lg-6 col-xl col-md-5 col-sm-12 flex-grow-1">
-                            <form onSubmit={handleSearch} className="search-header">
-                                <div className="input-group">
-                                    <input 
-                                        type="text" 
-                                        className="form-control" 
-                                        placeholder="Tìm kiếm" 
+
+                        <div className="col-12 col-md-5 col-lg-5 mb-2 mb-md-0">
+                            <form onSubmit={handleSearch} style={{ width: '100%' }}>
+                                <div style={{ display: 'flex', borderRadius: '30px', overflow: 'hidden', background: '#ffffff', padding: '2px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
+                                    <input
+                                        type="text"
+                                        style={{ flex: 1, border: 'none', outline: 'none', padding: '8px 20px', fontSize: '14px', borderRadius: '30px 0 0 30px' }}
+                                        placeholder="Tìm kiếm..."
                                         value={searchQuery}
                                         onChange={handleSearchInputChange}
                                     />
-                                    <select className="custom-select border-left" name="category_name">
-                                        <option value="">Tất cả loại</option>
-                                        <option value="codex">Đặc biệt</option>
-                                        <option value="comments">Chỉ tốt nhất</option>
-                                        <option value="content">Mới nhất</option>
-                                    </select>
+                                    <button type="submit" style={{ background: 'none', color: '#2b80dd', border: 'none', outline: 'none', padding: '8px 20px', fontWeight: '700', fontSize: '16px', cursor: 'pointer' }}>
+                                        <i className="fa fa-search"></i>
+                                    </button>
                                 </div>
                             </form>
                         </div>
-                        <div className="col-lg col-md" style={{ flexGrow: 0.2 }}>
-                            <button className="btn btn-block btn-primary" type="submit" onClick={handleSearch}>Tìm kiếm</button>
-                        </div>
-                        <div className="col-lg col-md" style={{ flexGrow: 0.2 }}>
-                            <div className="d-md-none float-right">
-                                <a href="#" className="btn btn-light"><i className="fa fa-bell"></i></a>
-                                <a href="#" className="btn btn-light"><i className="fa fa-user"></i></a>
-                                <a href="#" className="btn btn-light"><i className="fa fa-shopping-cart"></i> 2</a>
+
+                        <div className="col-12 col-md-4 col-lg-4 d-flex justify-content-end align-items-center" style={{ gap: '25px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <i className="fas fa-headset" style={{ color: '#ffffff', fontSize: '24px' }}></i>
+                                <div style={{ textAlign: 'left' }}>
+                                    <div style={{ fontSize: '11px', color: '#eff6ff', lineHeight: 1.2 }}>Gọi mua hàng:</div>
+                                    <strong style={{ fontSize: '15px', color: '#facc15' }}>0972495788</strong>
+                                </div>
                             </div>
+                            
+                            <Link to="/cart" style={{ color: '#ffffff', textDecoration: 'none', position: 'relative' }}>
+                                <i className="fa fa-shopping-cart" style={{ fontSize: '26px' }}></i>
+                                {cartCount > 0 && (
+                                    <span className="badge badge-pill badge-danger" style={{ position: 'absolute', top: '-8px', right: '-10px', fontSize: '10px', background: '#ef4444', border: '2px solid #2b80dd' }}>
+                                        {cartCount}
+                                    </span>
+                                )}
+                            </Link>
                         </div>
                     </div>
                 </div>
-            </section>
+            </div>
 
-            {/* Menu chính và Danh mục */}
-            <nav className="navbar navbar-main navbar-expand pl-0">
-                <ul className="navbar-nav flex-wrap">
-                    <li className="nav-item">
-                        <Link className="nav-link" to="/Home">Trang chủ</Link>
-                    </li>
-                    <li className="nav-item dropdown">
-                        <a className="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown">
-                            Danh sách sản phẩm
+            <nav style={{ background: '#2570c2', padding: '10px 0' }}>
+                <div className="container d-flex justify-content-center align-items-center flex-wrap" style={{ gap: '20px' }}>
+                    <Link 
+                        to="/Home" 
+                        style={{ color: '#ffffff', textDecoration: 'none', fontWeight: '700', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', transition: 'opacity 0.2s' }}
+                    >
+                        <i className="fas fa-home"></i>
+                        <span>Trang chủ</span>
+                    </Link>
+                    <span style={{ color: '#ffffff', opacity: 0.3 }}>|</span>
+
+                    <div className={`dropdown ${showDropdown ? 'show' : ''}`} style={{ marginRight: '10px' }}>
+                        <a 
+                            className="dropdown-toggle" 
+                            href="#" 
+                            style={{ color: '#ffffff', textDecoration: 'none', fontWeight: '700', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setShowDropdown(!showDropdown);
+                            }}
+                        >
+                            <i className="fas fa-bars"></i>
+                            <span>Danh mục sản phẩm</span>
                         </a>
-                        <div className="dropdown-menu">
-                            {categories.length > 0 && categories.map((row) => (
-                                <a className="dropdown-item" key={row.categoryId} href={`/ListingGrid?categoryId=${row.categoryId}`}>
-                                    {row.categoryName}
-                                </a>
-                            ))}
+                        <div className={`dropdown-menu ${showDropdown ? 'show' : ''}`} style={{ minWidth: '220px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', border: 'none', borderRadius: '8px' }}>
+                            {categories.length > 0 ? (
+                                categories.map((row) => (
+                                    <a className="dropdown-item py-2" key={row.categoryId} href={`/ListingGrid?categoryId=${row.categoryId}`} style={{ fontSize: '13px', fontWeight: '500' }}>
+                                        {row.categoryName}
+                                    </a>
+                                ))
+                            ) : (
+                                <>
+                                    <a className="dropdown-item py-2" href="/ListingGrid" style={{ fontSize: '13px' }}>Điện thoại di động</a>
+                                    <a className="dropdown-item py-2" href="/ListingGrid" style={{ fontSize: '13px' }}>Laptop & Máy tính</a>
+                                    <a className="dropdown-item py-2" href="/ListingGrid" style={{ fontSize: '13px' }}>Máy tính bảng</a>
+                                    <a className="dropdown-item py-2" href="/ListingGrid" style={{ fontSize: '13px' }}>Phụ kiện</a>
+                                </>
+                            )}
                             <div className="dropdown-divider"></div>
-                            <a className="dropdown-item" href="/ListingGrid">Tất cả sản phẩm</a>
+                            <a className="dropdown-item py-2 font-weight-bold text-primary" href="/ListingGrid" style={{ fontSize: '13px' }}>Tất cả sản phẩm</a>
                         </div>
-                    </li>
-                    <li className="nav-item"><a className="nav-link" href="#">Điện tử</a></li>
-                    <li className="nav-item"><a className="nav-link" href="#">Thời trang</a></li>
-                    <li className="nav-item"><a className="nav-link" href="#">Làm đẹp</a></li>
-                    <li className="nav-item"><a className="nav-link" href="#">Xe hơi</a></li>
-                    <li className="nav-item"><a className="nav-link" href="#">Thể thao</a></li>
-                    <li className="nav-item"><a className="nav-link" href="#">Nông trại và vườn</a></li>
-                    <li className="nav-item"><a className="nav-link" href="#">Khuyến mãi</a></li>
-                    <li className="nav-item"><a className="nav-link" href="#">Dưới $10</a></li>
-                </ul>
+                    </div>
+
+                    {categories.length > 0 ? (
+                        categories.map((row) => (
+                            <Link 
+                                key={row.categoryId} 
+                                to={`/ListingGrid?categoryId=${row.categoryId}`} 
+                                style={{ color: '#ffffff', textDecoration: 'none', fontWeight: '700', fontSize: '13px', transition: 'opacity 0.2s' }}
+                                onMouseEnter={(e) => { e.currentTarget.style.opacity = 0.8; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.opacity = 1; }}
+                            >
+                                {row.categoryName}
+                            </Link>
+                        ))
+                    ) : (
+                        <>
+                            <Link to="/ListingGrid?categoryId=1" style={{ color: '#ffffff', textDecoration: 'none', fontWeight: '700', fontSize: '13px' }}>Mac</Link>
+                            <Link to="/ListingGrid?categoryId=2" style={{ color: '#ffffff', textDecoration: 'none', fontWeight: '700', fontSize: '13px' }}>Iphone</Link>
+                            <Link to="/ListingGrid?categoryId=3" style={{ color: '#ffffff', textDecoration: 'none', fontWeight: '700', fontSize: '13px' }}>Ipad</Link>
+                            <Link to="/ListingGrid" style={{ color: '#ffffff', textDecoration: 'none', fontWeight: '700', fontSize: '13px' }}>Máy cũ</Link>
+                            <Link to="/ListingGrid" style={{ color: '#ffffff', textDecoration: 'none', fontWeight: '700', fontSize: '13px' }}>Apple Watch</Link>
+                            <Link to="/ListingGrid" style={{ color: '#ffffff', textDecoration: 'none', fontWeight: '700', fontSize: '13px' }}>Phụ kiện</Link>
+                        </>
+                    )}
+                    <Link to="/ListingGrid" style={{ color: '#ffffff', textDecoration: 'none', fontWeight: '700', fontSize: '13px' }}>Sony Playstation 5</Link>
+                    <Link to="/ListingGrid" style={{ color: '#ffffff', textDecoration: 'none', fontWeight: '700', fontSize: '13px' }}>Tin tức</Link>
+                </div>
             </nav>
         </header>
     );

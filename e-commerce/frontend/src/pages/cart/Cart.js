@@ -39,7 +39,7 @@ const Cart = () => {
         const token = localStorage.getItem('authToken');
         const cartId = await getOrFetchCartId();
         const user = JSON.parse(localStorage.getItem('user') || '{}');
-        const email = user.email;
+        const email = user.email || user.username || user.sub || user.user;
 
         if (token && cartId && email) {
           const cartData = await fetchCartById(cartId, email);

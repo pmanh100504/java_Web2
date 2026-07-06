@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { LOGIN } from "../../api/apiService"; // Adjust the path based on your project structure
-import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
+import { useNavigate, Link } from "react-router-dom"; // Import useNavigate and Link for navigation
 
 const SectionContent = () => {
   const [email, setEmail] = useState("");
@@ -86,7 +86,7 @@ const SectionContent = () => {
         </div>
       </div>
       <p className="text-center mt-4">
-        Don't have an account? <a href="#">Sign up</a>
+        Don't have an account? <Link to="/Register">Sign up</Link>
       </p>
       <br />
       <br />
